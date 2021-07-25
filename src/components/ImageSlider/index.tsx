@@ -17,7 +17,7 @@ export function ImageSlider({imageUrl}:Props){
      <Container>
         <ImageIndexes>
             <ImageIndex active={true}/>
-            <ImageIndex active={true}/>
+            <ImageIndex active={false}/>
             <ImageIndex active={false}/>
             <ImageIndex active={false}/>
         </ImageIndexes>

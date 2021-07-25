@@ -14,15 +14,19 @@ import{
 } from './styles';
 import { ConfirmButton } from '../../components/ConfirmButton';
 import { StatusBar } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import { CarDTO } from '../../dtos/CarDTO';
+
 
 export function SchedulingComplete(){
+    
+
     const {width} = useWindowDimensions();
     const navigation = useNavigation();
     function handleRestartProcess(){
         navigation.navigate('Home');
     }
- return ( 
+ return (
     <Container>
         <StatusBar
         barStyle="light-content"

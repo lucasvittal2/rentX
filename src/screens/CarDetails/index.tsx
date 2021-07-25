@@ -1,22 +1,14 @@
 import React from 'react';
+import { useNavigation, useRoute } from '@react-navigation/native';
 
 import { BackButton } from '../../components/BackButton';
 import { ImageSlider } from '../../components/ImageSlider';
 import { Accessory } from '../../components/Accessory';
 import { Button } from '../../components/Button';
 
-import speedSvg from '../../assets/speed.svg'
-import accelerationSvg from '../../assets/acceleration.svg';
-import forceSvg from '../../assets/force.svg';
-import gasolineSvg from '../../assets/gasoline.svg';
-import exchangeSvg from '../../assets/exchange.svg';
-import peopleSvg from '../../assets/people.svg';
+import {getAccesoryIcon} from '../../utils/getAccesoryIcon';
 
 
-
-
-
- 
 import{
   Container,
   Header,
@@ -33,12 +25,17 @@ import{
   Accessories,
   Footer
 } from './styles';
-import { useNavigation } from '@react-navigation/native';
+import { CarDTO } from '../../dtos/CarDTO';
 
+interface Parms {
+    car: CarDTO;
+}
 export function CarDetails(){
+    const route = useRoute();
+    const { car }  =  route.params as Parms;
     const navigation = useNavigation();
     function hadleConfirmRental(){
-        navigation.navigate('Schedule');
+        navigation.navigate('Schedule', {car});
     }
  return ( 
     <Container>
@@ -46,56 +43,32 @@ export function CarDetails(){
             <BackButton color = '' onPress={()=>navigation.goBack()}/>
         </Header>
         <CarImages>
-            <ImageSlider imageUrl= {['https://w7.pngwing.com/pngs/444/585/png-transparent-2018-audi-tt-rs-car-audi-rs5-coupe-audi-compact-car-car-performance-car.png']}/>
+            <ImageSlider imageUrl= {car.photos}/>
         </CarImages>
         <Content>
             <Details>
                 <Description>
-                    <Brand>Lanboguini</Brand>
-                    <Name>Huracan</Name>
+                    <Brand>{car.brand}</Brand>
+                    <Name>R$ {car.name}`</Name>
                 </Description>
                 <Rent>
-                    <Period> ao dia </Period>
-                    <Price> R$ 580,00</Price>
+                    <Period>{car.rent.period} </Period>
+                    <Price> R$ {car.rent.price}</Price>
                 </Rent>
             </Details>
             <Accessories>
-
-                <Accessory name = "380km/H" icon={speedSvg} />
-                <Accessory name = "3.2s" icon={accelerationSvg} />
-                <Accessory name = "800Hp" icon={forceSvg}/>
-                <Accessory name = "Gasolina" icon={gasolineSvg} />
-                <Accessory name = "Auto" icon={exchangeSvg} />
-                <Accessory name = "2 Pessoas" icon={peopleSvg}/>
-
-
-
-
-                
+                {
+                car.accessories.map( (accessory) => {
+                    console.log(getAccesoryIcon(accessory.type));
+                        return <Accessory
+                        key = {accessory.type}
+                        name = {accessory.name}
+                        icon={ getAccesoryIcon(accessory.type) }
+                        />
+                    }) 
+                }
             </Accessories>
-            <About>
-                Este é automóvel desportivo. Sugiu do lendário
-                touro lide indultado 
-                na praça Real Maestranza de Sevilla. 
-                É um belíssimo carro para quem gosta de acelerar. 
-                bla bla bla bla bla bla bla bla bla
-                bla bla  bla bla bla bla bla bla bla
-                bla bla bla bla bla bla bla bla bla
-                bla bla bla bla bla bla bla bla bla
-                bla bla bla bla bla bla bla bla bla
-                bla bla bla bla bla bla bla bla bla
-                bla bla bla bla bla bla bla bla bla
-                bla bla bla bla bla bla bla bla bla
-                bla bla bla bla bla bla bla bla bla
-                bla bla bla bla bla bla bla bla bla
-                bla bla bla bla bla bla bla bla bla
-                bla bla bla bla bla bla bla bla bla
-                bla bla bla bla bla bla bla bla bla
-                bla bla bla bla bla bla bla bla bla
-                bla bla bla bla bla bla bla bla bla
-
-
-            </About>
+            <About>{car.about}</About>
         </Content>
         <Footer>
             <Button title = "Escolher Período do Aluguel" onPress={hadleConfirmRental}/>
