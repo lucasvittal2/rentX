@@ -8,6 +8,7 @@ import { RectButton } from 'react-native-gesture-handler';
 export const Container = styled.View`
     flex:1;
     background-color: ${({ theme }) => theme.colors.background_primary};
+    
 `;
 export const Header = styled.View`
     width: 100%;
@@ -40,14 +41,8 @@ font-size: ${RFValue(15)}px;
 font-family:  ${({ theme }) => theme.fonts.primary_400};
 color:  ${({ theme }) => theme.colors.text};
 `;
-export const MyCarsButton = styled(RectButton)`
-    width: 60px;
-    height: 60px;
-    border-radius: 30px;
-    justify-content: center;
+export const ContentWrapper = styled.View`
     align-items: center;
-    background-color: ${({ theme }) => theme.colors.main};
-    position: absolute;
-    bottom: 13px;
-    right: 22px;
-`
+    justify-content: center;
+    
+`;

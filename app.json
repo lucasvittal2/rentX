@@ -3,6 +3,10 @@
   "displayName": "rentx",
   "expo": {
     "name": "rentx",
+    "splash": {
+      "image": "./assets/splash.png",
+      "backgroundColor": "#1B1B1F"
+    },
     "slug": "rentx",
     "version": "1.0.0",
     "assetBundlePatterns": [

@@ -26,6 +26,7 @@ import{
     CarFooterDate,
     
 } from './styles';
+import { LoadAnimation } from '../../components/LoadAnimation';
 
 interface CarProps {
     car:  CarDTO;
@@ -43,7 +44,6 @@ export function MyCars(){
         async function fetchCars(){
             try{
                 const response = await api.get(`/schedules_byuser/?user_id=1`);
-                console.log(response.data);
                 setCars(response.data);
             }catch(error){
                 console.log(error);
@@ -56,26 +56,31 @@ export function MyCars(){
     return ( 
         <Container>
             <Header>
-                <ButtonBack> 
+                <ButtonBack>
+                
                 <BackButton
                     color = {theme.colors.shape}
                     onPress={() => navigation.goBack()}/>
                 </ButtonBack>           
                     <Title> 
-                        Escolha uma {'\n'}
-                        data de início e {'\n'}
-                        fim do Aluguel
+                        Seus agendamentos{'\n'}
+                        estão aqui.
                     </Title>
-                    <SubTitle>
-                        Conforto, Segurança e praticidade
-                    </SubTitle>
+            
+                <SubTitle>
+                    Conforto, Segurança e praticidade
+                </SubTitle>
             </Header>
             {
             loading?
-            <ActivityIndicator
-                size='large'
-                color={theme.colors.main}
-            />
+            <View style={{
+                marginTop:95,
+                marginLeft: 40
+
+            }}>
+                <LoadAnimation/>
+            </View>
+            
             :
             <Content>
                 <Appointments>
