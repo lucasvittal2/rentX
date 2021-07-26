@@ -98,7 +98,7 @@ export function SchedulingDetails(){
                 <BackButton color = '' onPress={() => navigation.goBack()}/>
             </Header>
             <CarImages>
-                <ImageSlider imageUrl= {car.photos}/>
+                <ImageSlider imagesUrl= {car.photos}/>
             </CarImages>
             <Content>
                 <Details>

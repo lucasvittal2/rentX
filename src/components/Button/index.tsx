@@ -4,7 +4,7 @@ import { useTheme } from 'styled-components';
 
 import{
   Container,
-  Title
+  Title,
 } from './styles';
 interface Props  {
     title: string;
@@ -12,13 +12,15 @@ interface Props  {
     onPress: ()=>void;
     enabled?: boolean;
     loading?: boolean;
+    light?: boolean;
 } 
 export function Button({
     title,
     color,
     onPress,
     enabled = true,
-    loading = false
+    loading = false,
+    light=false
 }: Props){
   const theme = useTheme();
  return ( 
@@ -28,7 +30,13 @@ export function Button({
       enabled={enabled}
       style = {{ opacity: !enabled || loading ? .5: 1}}
     >
-      {loading? <ActivityIndicator color = {theme.colors.shape}/>: <Title>{title}</Title>}
+      {
+      loading? 
+      <ActivityIndicator
+      color = {theme.colors.shape}
+      />:
+      <Title light={light}>{title}</Title>
+      }
 
     </Container>
   );
