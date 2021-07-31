@@ -20,9 +20,8 @@ import theme from './src/styles/theme';
 import { CarDetails } from './src/screens/CarDetails';
 import { Schedule } from './src/screens/Schedule';
 import { SchedulingDetails } from './src/screens/SchedulingDetails';
-import { SchedulingComplete } from './src/screens/SchedulingComplete';
 import { Routes } from './src/routes';
-
+import { AppProvider } from './src/hook'
 
 export default function App() {
   const [fonstLoaded] = useFonts({
@@ -41,7 +40,9 @@ export default function App() {
   }
   return (
     <ThemeProvider theme={theme}>
-      <Routes/>
+      <AppProvider>
+        <Routes/>
+      </AppProvider>
     </ThemeProvider>
   );
 }

@@ -2,6 +2,7 @@ import React, { useRef } from 'react';
 import { useState } from 'react';
 import { ViewToken } from 'react-native';
 import { FlatList } from 'react-native-gesture-handler';
+import { Bullet } from '../Bullet';
 
 import{
   Container,
@@ -13,13 +14,17 @@ import{
 } from './styles';
 
 interface Props {
-  imagesUrl: string[];
-}
+  imagesUrl:{
+      id: string;
+      photo: string;
+    }[];
+};
+
 interface ChangeImageProps {
     viewableItems: ViewToken[];
     changed: ViewToken[];
 }
-export function ImageSlider({imagesUrl}:Props){
+export function ImageSlider({ imagesUrl }: Props){
   const [imageIndex, setImageIndex] = useState(0);
   const indexChanged = useRef( (info: ChangeImageProps) => {
     setImageIndex(info.viewableItems[0].index!)
@@ -28,9 +33,9 @@ export function ImageSlider({imagesUrl}:Props){
       <Container>
         <ImageIndexes>
           {
-            imagesUrl.map( (_, index)=>(
-              <ImageIndex 
-                key={ String(index) }
+            imagesUrl.map( (item, index)=>(
+              <Bullet 
+                key={ String(item.id) }
                 active={index === imageIndex}
               />  
             ))
@@ -41,11 +46,11 @@ export function ImageSlider({imagesUrl}:Props){
         
           <FlatList
             data = {imagesUrl}
-            keyExtractor = {key => key}
+            keyExtractor = {item => item.id}
             renderItem ={ ({ item }) =>(
               <CarImageWrapper>
                 <CarImage
-                  source ={{uri:item}}
+                  source ={{uri: item.photo}}
                   resizeMode = 'contain'
                 />
               </CarImageWrapper>

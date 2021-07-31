@@ -7,7 +7,7 @@ export const Container = styled.View`
     justify-content: center;
     align-items: center;
     background-color: ${({theme}) => theme.colors.background_primary};
-    padding: 16px;
+    margin-right:-10px;
     margin-bottom: 3px;
 `;
 export const Name = styled.Text`

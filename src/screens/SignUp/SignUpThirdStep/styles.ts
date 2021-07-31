@@ -3,9 +3,8 @@ import { getStatusBarHeight } from 'react-native-iphone-x-helper'
 import { RFValue } from 'react-native-responsive-fontsize';
 
 export const Container = styled.View`
-    padding: 0px 23px;
-    background-color: ${({ theme}) => theme.colors.background_primary};
-    margin-top: -80px;
+    padding:0 24px;
+    background-color: ${({ theme }) => theme.colors.background_primary};
 `;
 
 export const Header = styled.View`

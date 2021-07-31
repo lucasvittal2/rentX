@@ -17,14 +17,20 @@ import { StatusBar } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { CarDTO } from '../../dtos/CarDTO';
 
+interface Params {
+    title: string;
+    message: string;
+    nextScreenRoute: string;
+}
 
-export function SchedulingComplete(){
+export function Confirmation(){
     
-
+    const route = useRoute();
+    const { title, message, nextScreenRoute } = route.params as Params;
     const {width} = useWindowDimensions();
     const navigation = useNavigation();
     function handleRestartProcess(){
-        navigation.navigate('Home');
+        navigation.navigate(nextScreenRoute);
     }
  return (
     <Container>
@@ -37,11 +43,9 @@ export function SchedulingComplete(){
                 <Content>
                 <LogoSvg widt={width}/>
                     <DoneSvg width={80} height={80}/>
-                    <Title> Carro Alugado</Title>
+                    <Title>{title}</Title>
                     <Message>
-                        Agora você só precisa ir{'\n'}
-                        até a concessionária da RENTX{'\n'}
-                        pega o seu automóvel.
+                        {message}
                     </Message>
                 </Content>
                 

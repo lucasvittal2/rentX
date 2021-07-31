@@ -1,7 +1,7 @@
 import { useNavigation } from '@react-navigation/native';
 import { RectButton, PanGestureHandler } from 'react-native-gesture-handler'
 import React, { useEffect, useState} from 'react';
-import { StatusBar, Alert, StyleSheet, BackHandler } from 'react-native'
+import { StatusBar, Alert, StyleSheet } from 'react-native'
 import { RFValue } from 'react-native-responsive-fontsize';
 import {Ionicons} from '@expo/vector-icons';
 import Animated,{
@@ -72,23 +72,29 @@ export function Home(){
     navigation.navigate('MyCars');
   }
   useEffect(() =>{
+    let isMounted = true;
     async function fetchCars(){
       try{
         const response = await api.get('/cars');
-        setCars(response.data);
+        if(isMounted){
+          setCars(response.data);
+        }
+        
       }catch(error){
         Alert.alert('Erro: Não foi possível obter dados do servidor');
       }finally{
-        setLoading(false);
+        if(isMounted){
+          setLoading(false);
+        }
+        
       }
     }
     fetchCars();
+    return () =>{
+      isMounted = false;
+    };
   }, []);
-  useEffect(() =>{
-    BackHandler.addEventListener('hardwareBackPress', () => {
-      return true;
-    })
-  },[])
+
  
  return ( 
     <Container>
@@ -122,7 +128,7 @@ export function Home(){
           renderItem={ ({item}) => <Car data={item}  onPress={()=>handleCarDetails(item)}/> }
           />}
         </ContentWrapper>
-        <PanGestureHandler
+        {/* <PanGestureHandler
           onGestureEvent={onGestureEvent}
         >
           <Animated.View
@@ -146,7 +152,7 @@ export function Home(){
               />
             </ButtonAnimated>
           </Animated.View>
-      </PanGestureHandler>
+      </PanGestureHandler> */}
     </Container>
   );
 }
