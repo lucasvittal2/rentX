@@ -4,16 +4,20 @@ import React, { useState } from 'react';
 import { 
     KeyboardAvoidingView,
     TouchableWithoutFeedback,
-    Keyboard
+    Keyboard,
+    Alert
 
  } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 
 
 import { useTheme } from 'styled-components';
+import { Button } from '../../components/Button';
 import { BackButton } from '../../components/BackButton';
 import { Input } from '../../components/Input';
 import { useAuth} from '../../hook/auth';
+
+import * as Yup from 'yup';
 
 
 import{
@@ -31,11 +35,11 @@ import{
     OptionTitle,
     Section
 } from './styles';
-import  ImagePicker from 'expo-image-picker';
+import * as ImagePicker from 'expo-image-picker';
 import { PasswordInput } from '../../components/PasswordInput';
 
 export function Profile(){
-    const { user } = useAuth();
+    const { user, signOut, updateUser } = useAuth();
     const theme = useTheme();
     const navigation = useNavigation();
     const [option, setOption ] = useState<'dataEdit' | 'passwordEdit'>('dataEdit');
@@ -47,13 +51,28 @@ export function Profile(){
     navigation.goBack();
     }
     function handleSignOut(){
-
+        Alert.alert(
+            'Tem certeza que deseja sair?',
+            'se você sair precisará de internet para conecta-se novamente',
+            [
+                {
+                    text: 'Cancelar',
+                    onPress: () => {},
+                    style: "cancel"
+                },
+                {
+                    text: "Sair",
+                    onPress: () => signOut()
+                }
+            ]
+        );
+        
     }
     function handleOptionChange(optionSelected: 'dataEdit' | 'passwordEdit'){
         setOption(optionSelected);
     }
     async function handleSelectAvatar(){
-        const result = await  ImagePicker.launchCameraAsync({
+        const result = await  ImagePicker.launchImageLibraryAsync({
             mediaTypes: ImagePicker.MediaTypeOptions.Images,
             allowsEditing: true,
             aspect: [4, 4],
@@ -64,6 +83,36 @@ export function Profile(){
         }
         if(result.uri){
             setAvatar(result.uri);
+        }
+    }
+    async function handleProfileUpdate(){
+        try{
+            const schema =  Yup.object().shape({
+                driverLicense: Yup.string()
+                .required('CNH é obrigatório'),
+                name: Yup.string().required('Nome é obrigatório'),
+
+            });
+            const data  = { name, driverLicense};
+            await schema.validate(data);
+            await updateUser({
+                id: user.id,
+                user_id: user.user_id,
+                name,
+                email: user.email,
+                driver_license: driverLicense,
+                avatar,
+                token: user.token
+            });
+            Alert.alert('Perfil atualizado');
+        }catch(error){
+            if(error instanceof Yup.ValidationError){
+                Alert.alert('Opa', error.message);
+            }
+            else{
+                Alert.alert("Não foi possível atualizar o perfil" );
+                console.log(error);
+            }
         }
     }
     return ( 
@@ -86,7 +135,7 @@ export function Profile(){
                                 </LogoutButton>
                             </HeaderTop>
                             <PhotoContainer>
-                                <Photo source = {{uri: 'https://avatars.githubusercontent.com/u/62555057?v=4'}} />
+                                  <Photo source = {{uri: avatar}} />
                                 <PhotoButton onPress = { handleSelectAvatar }>
                                     <Feather
                                         name= 'camera'
@@ -163,6 +212,10 @@ export function Profile(){
 
                         </Section>
                             }
+                            <Button 
+                                title="Salvar alterações"
+                                onPress={handleProfileUpdate}
+                            />
                         </Content>
                       
                     </Container>
