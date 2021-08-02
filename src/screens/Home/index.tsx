@@ -74,58 +74,55 @@ export function Home(){
   function handleOpenMyCars(){
     navigation.navigate('MyCars');
   }
-  async function offlineSincronize(){
+  async function offlineSynchronize() {
     await synchronize({
       database,
       pullChanges: async ({ lastPulledAt }) => {
-        
-        const response =  await api
-        .get(`cars/sync/pull?lastPulledVersion=${lastPulledAt || 0}`);
-        
-        const { changes, latestVersion } = response.data;
-        console.log(changes.cars)
-        return {changes, timestamp: latestVersion}
-      },
-      pushChanges: async ({ changes }) =>{
-       
-        const user = changes.users;
-        await api.post('/users/sync/', user)
+        const response = await api.get(
+          `cars/sync/pull?lastPulledVersion=${lastPulledAt || 0}`
+        )
 
+        const { changes, latestVersion } = response.data
+        console.log('***cars ***   ');
+        console.log( changes );
+        return { changes, timestamp: latestVersion }
+      },
+      pushChanges: async ({ changes }) => {
+        const user = changes.users
+        await api.post('/users/sync', user)
       }
-    });
+    })
   }
-  useEffect(() =>{
-    let isMounted = true;
-    async function fetchCars(){
-      try{
-        
-       // const carsFetched = await api.get('/cars');
-       const carCollection = database.get<ModelCar>('cars')
-       const cars = await carCollection.query().fetch();
-      //  console.log('vindo do DB')
-      //  console.log(carsFetched);
-       // const carsFetched = await carCollection.query().fetch();
-        if(isMounted){
-          setCars(cars);
+
+  useEffect(() => {
+    let isMounted = true
+
+    async function fetchCars() {
+      try {
+        const carCollection = database.get<ModelCar>('cars')
+        const cars = await carCollection.query().fetch()
+       
+
+        if (isMounted) {
+          setCars(cars)
         }
-      }catch(error){
-        console.log(error);
-      }finally{
-        if(isMounted){
-          setLoading(false);
+      } catch (error) {
+        console.log(error)
+      } finally {
+        if (isMounted) {
+          setLoading(false)
         }
-        
       }
     }
-    fetchCars();
-    
-    return () =>{
-      isMounted = false;
-    };
+
+    fetchCars()
+    return () => {
+      isMounted = false
+    }
   }, []);
   useEffect( ()=>{
     if(netInfo.isConnected){
-      offlineSincronize();
+      offlineSynchronize();
     }
   }, [netInfo.isConnected]);
  
