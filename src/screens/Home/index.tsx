@@ -35,6 +35,7 @@ import{
 
 import { api } from '../../services/api';
 import { useTheme } from 'styled-components';
+import { CarDTO } from '../../dtos/CarDTO';
 
 
 export function Home(){
@@ -68,7 +69,7 @@ export function Home(){
   const [loading, setLoading] = useState(true);
   const theme = useTheme();
 
-  function handleCarDetails(car: ModelCar){
+  function handleCarDetails(car: CarDTO){
     navigation.navigate('CarDetails', { car });
   }
   function handleOpenMyCars(){
@@ -83,8 +84,8 @@ export function Home(){
         )
 
         const { changes, latestVersion } = response.data
-        console.log('***cars ***   ');
-        console.log( changes );
+    
+       
         return { changes, timestamp: latestVersion }
       },
       pushChanges: async ({ changes }) => {
@@ -101,7 +102,6 @@ export function Home(){
       try {
         const carCollection = database.get<ModelCar>('cars')
         const cars = await carCollection.query().fetch()
-       
 
         if (isMounted) {
           setCars(cars)
@@ -121,7 +121,7 @@ export function Home(){
     }
   }, []);
   useEffect( ()=>{
-    if(netInfo.isConnected){
+    if(netInfo.isConnected === true){
       offlineSynchronize();
     }
   }, [netInfo.isConnected]);

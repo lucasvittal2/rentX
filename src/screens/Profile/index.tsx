@@ -37,10 +37,12 @@ import{
 } from './styles';
 import * as ImagePicker from 'expo-image-picker';
 import { PasswordInput } from '../../components/PasswordInput';
+import { useNetInfo } from '@react-native-community/netinfo';
 
 export function Profile(){
     const { user, signOut, updateUser } = useAuth();
     const theme = useTheme();
+    const netInfo = useNetInfo();
     const navigation = useNavigation();
     const [option, setOption ] = useState<'dataEdit' | 'passwordEdit'>('dataEdit');
     const [avatar, setAvatar] = useState(user.avatar);
@@ -69,7 +71,13 @@ export function Profile(){
         
     }
     function handleOptionChange(optionSelected: 'dataEdit' | 'passwordEdit'){
-        setOption(optionSelected);
+        if(netInfo.isConnected  === false && optionSelected === 'passwordEdit'){
+            Alert.alert('Você está Offline','Para mudar a senha conecte-se à internet');
+            
+        }
+        else{
+            setOption(optionSelected);
+        }
     }
     async function handleSelectAvatar(){
         const result = await  ImagePicker.launchImageLibraryAsync({

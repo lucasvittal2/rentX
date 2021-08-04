@@ -1,153 +1,181 @@
-import React from 'react';
-import { useNavigation, useRoute } from '@react-navigation/native';
-import Animated , {
-    useSharedValue,
-    useAnimatedScrollHandler,
-    useAnimatedStyle,
-    interpolate,
-    Extrapolate,
-} from 'react-native-reanimated';
+import React, { useEffect, useState } from 'react'
+import { StatusBar, StyleSheet, View } from 'react-native'
+import { getStatusBarHeight } from 'react-native-iphone-x-helper'
+import Animated, {
+  Extrapolate,
+  interpolate,
+  useAnimatedScrollHandler,
+  useAnimatedStyle,
+  useSharedValue
+} from 'react-native-reanimated'
+import { useTheme } from 'styled-components/native'
 
-import { BackButton } from '../../components/BackButton';
-import { ImageSlider } from '../../components/ImageSlider';
-import { Accessory } from '../../components/Accessory';
-import { Button } from '../../components/Button';
+import { useNavigation, useRoute } from '@react-navigation/native'
 
-import {getAccesoryIcon} from '../../utils/getAccesoryIcon';
+import { Accessory } from '../../components/Accessory'
+import { BackButton } from '../../components/BackButton'
+import { Button } from '../../components/Button'
+import { ImageSlider } from '../../components/ImageSlider'
+import { CarDTO as Car} from '../../dtos/CarDTO';
 
-
-import{
-  Container,
-  Header,
-  CarImages,
-  Details,
-  Description,
+import { getAccesoryIcon } from '../../utils/getAccesoryIcon'
+import {
+  About,
+  AccessoriesContainer,
   Brand,
+  CarImages,
+  Container,
+  Description,
+  Details,
+  Footer,
+  Header,
   Name,
-  Rent,
   Period,
   Price,
-  About,
-  Accessories,
-  Footer
-} from './styles';
-import { CarDTO } from '../../dtos/CarDTO';
-import { getStatusBarHeight } from 'react-native-iphone-x-helper';
-import { StatusBar, StyleSheet } from 'react-native';
-import { useTheme } from 'styled-components';
+  Rent,
+  ButtonBack,
+  OfflineInfo
+} from './styles'
+import { useNetInfo } from '@react-native-community/netinfo'
+import { api } from '../../services/api'
 
-interface Parms {
-    car: CarDTO;
+interface Params {
+  car: Car
 }
-export function CarDetails(){
-    const theme = useTheme();
-    const route = useRoute();
-    const { car }  =  route.params as Parms;
-    const scrollY = useSharedValue(0);
-    const scrollHandler = useAnimatedScrollHandler(event=>{
-        scrollY.value = event.contentOffset.y;
-    });
-    const navigation = useNavigation();
-    const headerStyleAnimation = useAnimatedStyle( () => {
-        return {
-            height: interpolate(
-                scrollY.value,
-                [0, 200],
-                [200, 70],
-                Extrapolate.CLAMP
-                )
+
+export function CarDetails() {
+  const theme = useTheme()
+  const { goBack, navigate } = useNavigation()
+  const [ carUpdated, setCarUpdated] = useState<Car>({} as Car);
+  const netInfo = useNetInfo();
+
+  const route = useRoute()
+  const { car } = route.params as Params
+ 
+
+  function handleSchedule() {
+    navigate('Schedule', { car })
+  }
+
+  const scrollY = useSharedValue(0)
+  const scrollHandler = useAnimatedScrollHandler(event => {
+    scrollY.value = event.contentOffset.y
+  })
+
+  const headerStyleAnimation = useAnimatedStyle(() => {
+    return {
+      height: interpolate(scrollY.value, [0, 200], [200, 70], Extrapolate.CLAMP)
+    }
+  })
+
+  const sliderCarsStyleAnimation = useAnimatedStyle(() => {
+    return {
+      opacity: interpolate(scrollY.value, [0, 150], [1, 0], Extrapolate.CLAMP)
+    }
+  })
+  useEffect( () => {
+        async function fetchCarUpdated(){
+        const response = await api.get(`/cars/${car.id}`)
+        setCarUpdated(response.data);
         }
-    })
-    const sliderCarsStyleAnimation = useAnimatedStyle( () => {
-        return{
-            opacity: interpolate(
-                scrollY.value,
-                [0, 150],
-                [1, 0],
-                Extrapolate.CLAMP
-            )
-        };
-    });
-    function hadleConfirmRental(){
-        navigation.navigate('Schedule', {car});
-    }
- return ( 
+        if(netInfo.isConnected === true){
+            fetchCarUpdated();
+        }
+        else{
+            setCarUpdated(car);
+        }
+ 
+  }, [netInfo.isConnected])
+
+  return (
     <Container>
-        <StatusBar
-            barStyle="dark-content"
-            translucent
-            backgroundColor="transparent"
-        />
-        <Animated.View
-            style={[headerStyleAnimation, styled.header]}
-        >
-            <Header>
+      <StatusBar
+        barStyle="dark-content"
+        translucent
+        backgroundColor="transparent"
+      />
+
+      <Animated.View
+        style={[
+          headerStyleAnimation,
+          styles.header,
+          { backgroundColor: theme.colors.background_secondary }
+        ]}
+      >
+        <Header>
+            <ButtonBack> 
                 <BackButton
-                onPress={()=>navigation.goBack()}
-                />
-            </Header>
-            <Animated.View
-                style = {[
-                    sliderCarsStyleAnimation,
-                    {backgroundColor: theme.colors.background_secondary}
-                ]}
-            >
-                <CarImages>
-                    <ImageSlider imagesUrl= {car.photos}/>
-                </CarImages>
-            </Animated.View>
+                    color = {theme.colors.header}
+                    onPress={goBack}/>
+            </ButtonBack>    
+        </Header>
+        <Animated.View style={[sliderCarsStyleAnimation]}>
+          <CarImages>
+            <ImageSlider imagesUrls={
+              !! carUpdated.photos?
+              carUpdated.photos
+              :
+              [{id: String(Math.random()) ,photo: carUpdated.thumbnail}]
+            } />
+          </CarImages>
         </Animated.View>
-        <Animated.ScrollView
-        contentContainerStyle = {{
-            paddingHorizontal: 24,
-            paddingTop: getStatusBarHeight() +160,
+      </Animated.View>
 
+      <Animated.ScrollView
+        contentContainerStyle={{
+          paddingHorizontal: 24,
+          paddingTop: getStatusBarHeight() + 160,
+          alignItems: 'center'
         }}
-        showsVerticalScrollIndicator = {false}
-        onScroll = {scrollHandler}
-        scrollEventThrottle={5}
-        >
-            <Details>
-                <Description>
-                    <Brand>{car.brand}</Brand>
-                    <Name>R$ {car.name}`</Name>
-                </Description>
-                <Rent>
-                    <Period>{car.period} </Period>
-                    <Price> R$ {car.price}</Price>
-                </Rent>
-            </Details>
-            <Accessories>
-                {
-                car.accessories.map( (accessory) => {
-                        return <Accessory
-                        key = {accessory.type}
-                        name = {accessory.name}
-                        icon={ getAccesoryIcon(accessory.type) }
-                        />
-                    }) 
-                }
-            </Accessories>
-            <About>
-                {car.about}
-                {car.about}
+        showsVerticalScrollIndicator={false}
+        onScroll={scrollHandler}
+        scrollEventThrottle={16}
+      >
+        <Details>
+          <Description>
+            <Brand>{carUpdated.brand}</Brand>
+            <Name>{carUpdated.name}</Name>
+          </Description>
 
-                {car.about}
-                {car.about}
+          <Rent>
+            <Period>{carUpdated.period}</Period>
+            <Price>R$ { netInfo.isConnected === true? carUpdated.price: '...'}</Price>
+          </Rent>
+        </Details>
+        <AccessoriesContainer>
+          {carUpdated.accessories && carUpdated.accessories.map(accessory => (
+            <Accessory
+              key={accessory.type}
+              name={accessory.name}
+              icon={getAccesoryIcon(accessory.type)}
+            />
+          ))
+        }
+        </AccessoriesContainer>
+        <About>{carUpdated.about}</About>
+      </Animated.ScrollView>
 
-            </About>
-        </Animated.ScrollView>
-        <Footer>
-            <Button title = "Escolher Período do Aluguel" onPress={hadleConfirmRental}/>
-        </Footer>
+      <Footer>
+        <Button
+          title="Escolher período do aluguel"
+          onPress={handleSchedule}
+          enabled={netInfo.isConnected === true}
+        />
+        {
+          netInfo.isConnected ===false && 
+          <OfflineInfo>
+            Conecte-se à internet para ver mais detalhes {'\n'} e agendar seu carro.
+          </OfflineInfo>
+        }
+      </Footer>
     </Container>
-  );
+  )
 }
-const styled = StyleSheet.create({
-    header:{
-        position: 'absolute',
-        overflow: 'hidden',
-        zIndex: 1,
 
-    }
+const styles = StyleSheet.create({
+  header: {
+    position: 'absolute',
+    overflow: 'hidden',
+    zIndex: 1
+  }
 })

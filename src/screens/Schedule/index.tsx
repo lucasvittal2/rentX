@@ -24,6 +24,7 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import {format} from 'date-fns';
 import { getPlatformDate } from '../../utils/getPlatformDate';
 import { Alert } from 'react-native';
+import { Car as CarModel} from '../../database/model/Car';
 import { CarDTO } from '../../dtos/CarDTO';
 
 interface RentalPeriod {
@@ -43,7 +44,7 @@ export function Schedule(){
     const  navigation = useNavigation();
     function handleConfirmRental(){
         navigation.navigate('ScheduleDetails',{
-            car,
+           car,
             dates: Object.keys(markedDates)
         });
     }

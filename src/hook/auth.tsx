@@ -29,41 +29,54 @@ interface AuthContextData {
     signIn: (credentials: SignInCredentials) => Promise<void>;
     signOut: () => Promise<void>;
     updateUser: (user: User) => Promise<void>;
+    loading: boolean;
 }
 interface AuthProviderProps {
     children: ReactNode
+}
+interface AuthState {
+    user: User,
+    token: string;
 }
 const AuthContext = createContext<AuthContextData> ({} as AuthContextData);
 
 function AuthProvider({ children }: AuthProviderProps){
     const [data, setData] = useState<User>({} as User);
+    const [loading, setLoading] = useState(true);
 
-    async function signIn({email, password}: SignInCredentials){
-
+    async function signIn({ email, password }: SignInCredentials) {
+        const response = await api.post('/sessions', {
+            email,
+            password
+          })
+          console.log('&&&&&&&&&&&&&&&&&&&%%%%%%%%&&&&&&&&');
+          console.log(response);
         try {
-            const response = await api.post('/sessions',{
-                email,
-                password
-            });
-            const { token, user } = response.data;
-            api.defaults.headers.authorization = `Bearer ${ token }`;
-
-            const userCollection = database.get<ModelUser>('users');
-            await database.write( async () => {
-                await userCollection.create( (newUser) => {
-                    newUser.user_id = user.id;
-                    newUser.name = user.name;
-                    newUser.email = user.email;
-                    newUser.drive_license = user.driver_license;
-                    newUser.token = token;
-                })
+          
+          const { token, user } = response.data
+          api.defaults.headers.authorization = `Bearer ${token}`
+         
+          const userCollection = database.get<ModelUser>('users')
+          try{
+          await database.write(async () => {
+           await userCollection.create(newUser => {
+              (newUser.user_id = user.id),
+                (newUser.name = user.name),
+                (newUser.email = user.email),
+                (newUser.driver_license = user.driver_license),
+                (newUser.avatar = user.avatar),
+                (newUser.token = token)
             })
-            setData({ ...user, token });  
+          })} catch(error){
+              console.log('*****');
+              console.log(error);
+          }
+    
+          setData({ ...user, token })
         } catch (error) {
-            throw new Error(error);
+          throw new Error(error)
         }
-        
-    }
+      }
     async function signOut(){
         try{
             const userCollection = database.get<ModelUser>('users');
@@ -79,11 +92,12 @@ function AuthProvider({ children }: AuthProviderProps){
     async function updateUser( user: User){
         try{
             const userCollection = database.get<ModelUser>('users');
+            console.log(userCollection.changes);
             await database.write( async () => {
                 const userSelected = await userCollection.find(user.id);
                 await userSelected.update( (userData) => {
                     userData.name = user.name;
-                    userData.drive_license = user.driver_license;
+                    userData.driver_license = user.driver_license;
                     userData.avatar = user.avatar;
                 })
             })
@@ -96,20 +110,26 @@ function AuthProvider({ children }: AuthProviderProps){
         async function loadUserData(){
             const userCollection = database.get<ModelUser>('users');
             const response = await userCollection.query().fetch();
+            console.log(response);
+     
             if( response.length > 0){
                 const userData = response[0]._raw as unknown as  User;
                 api.defaults.headers.authorization = `Bearer ${ userData.token }`;
                 setData(userData);
+                setLoading(false);
+                
             }
         }
         loadUserData();
+       
     }, [])
     return(
         <AuthContext.Provider value = {{
             user: data,
             signIn,
             signOut,
-            updateUser
+            updateUser,
+            loading
         }}>
             {children}
         </AuthContext.Provider>

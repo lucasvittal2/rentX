@@ -42,7 +42,8 @@ import{
 import { getPlatformDate } from '../../utils/getPlatformDate';
 import { api } from '../../services/api';
 import { Alert } from 'react-native';
-
+import { useNetInfo} from '@react-native-community/netinfo';
+import { CarDTO as Car} from '../../dtos/CarDTO';
 
 interface Params {
     car: CarDTO;
@@ -53,28 +54,23 @@ interface RentalPeriod {
     end: string;
 }
 export function SchedulingDetails(){
+    const [ carUpdated, setCarUpdated] = useState<Car>({} as Car);
     const [rentalPeriod, setRentalPeriod] = useState<RentalPeriod>({} as RentalPeriod);
     const [loading, setLoading] = useState(false);
     const theme = useTheme();
+    const netInfo = useNetInfo();
     const navigation = useNavigation();
     const route = useRoute();
     const {car, dates} = route.params as Params;
+    const rentTotal = Number(dates.length*car.price)
     async function handleFinishRental(){
         setLoading(true);
-        const schedulesByCar = await api.get(`/schedules_bycars/${car.id}`);
-        const unavailable_dates = [
-            ...schedulesByCar.data.unavailable_dates,
-            ...dates
-        ];
-        await api.post(`/schedules_byuser`, {
+       await api.post("/rentals", {
             user_id: 1,
-            car,
-            startDate: format(getPlatformDate(new Date(dates[0])),'dd/MM/yyyy'),
-            endDate: format(getPlatformDate(new Date(dates[dates.length - 1])),'dd/MM/yyyy')
-        })
-        api.put(`/schedules_bycars/${car.id}`,{
-            id: car.id,
-            unavailable_dates
+            car_id: car.id,
+            start_date: new Date(dates[0]),
+            end_date: new Date(dates[dates.length - 1]),
+            total: rentTotal
         }).then(() => {
             setLoading(false);
             navigation.navigate('Confirmation',{
@@ -83,26 +79,44 @@ export function SchedulingDetails(){
                 nextScreenRoute: 'Home'
             })
         })
-        .catch(()=>{
+        .catch((error)=>{
+            console.log(error);
             setLoading(false);
             Alert.alert("Não foi possível confirma o agendamento")
         });
-        
-       
     }
     useEffect( () => {
         setRentalPeriod({
             start: format(getPlatformDate(new Date(dates[0])),'dd/MM/yyyy'),
             end: format(getPlatformDate(new Date(dates[dates.length - 1])),'dd/MM/yyyy'),
         })
-    }, [])
+    }, []);
+
+    useEffect( () => {
+        async function fetchCarUpdated(){
+        const response = await api.get(`/cars/${car.id}`)
+        setCarUpdated(response.data);
+        }
+        if(netInfo.isConnected === true){
+            fetchCarUpdated();
+        }
+        else{
+            setCarUpdated(car);
+        }
+ 
+  }, [netInfo.isConnected])
     return ( 
         <Container>
             <Header>
                 <BackButton color = '' onPress={() => navigation.goBack()}/>
             </Header>
             <CarImages>
-                <ImageSlider imagesUrl= {car.photos}/>
+                <ImageSlider imagesUrls={
+                !! carUpdated.photos?
+                carUpdated.photos
+                :
+                [{id: String(Math.random()) ,photo: carUpdated.thumbnail}]
+                } />
             </CarImages>
             <Content>
                 <Details>
@@ -116,15 +130,14 @@ export function SchedulingDetails(){
                     </Rent>
                 </Details>
                 <Accessories>
-                    {
-                     car.accessories.map( (accesory)=> (
-                        <Accessory
-                        key = {accesory.type}
-                        name = {accesory.name}
-                        icon = {getAccesoryIcon(accesory.type)}
-                        />
-                     ))
-                    }
+                {carUpdated.accessories && carUpdated.accessories.map(accessory => (
+                    <Accessory
+                    key={accessory.type}
+                    name={accessory.name}
+                    icon={getAccesoryIcon(accessory.type)}
+                    />
+                ))
+                }
                     
                 </Accessories>
                 <RentalPeriod>

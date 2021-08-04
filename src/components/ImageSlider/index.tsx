@@ -1,67 +1,49 @@
-import React, { useRef } from 'react';
-import { useState } from 'react';
-import { ViewToken } from 'react-native';
-import { FlatList } from 'react-native-gesture-handler';
-import { Bullet } from '../Bullet';
+import React, { useState, useRef } from 'react'
+import { FlatList, ViewToken } from 'react-native'
+import { Bullet } from '../Bullet'
 
-import{
-  Container,
-  ImageIndexes,
-  ImageIndex,
-  CarImageWrapper,
-  CarImage,
-  
-} from './styles';
+import { Container, ImageIndexes, CarImageWrapper, CarImage } from './styles';
 
 interface Props {
-  imagesUrl:{
-      id: string;
-      photo: string;
-    }[];
-};
+  imagesUrls: {
+    id: string
+    photo: string
+  }[]
+}
 
 interface ChangeImageProps {
-    viewableItems: ViewToken[];
-    changed: ViewToken[];
+  viewableItems: ViewToken[]
+  changed: ViewToken[]
 }
-export function ImageSlider({ imagesUrl }: Props){
-  const [imageIndex, setImageIndex] = useState(0);
-  const indexChanged = useRef( (info: ChangeImageProps) => {
+
+export function ImageSlider({ imagesUrls }: Props): JSX.Element {
+  const [imageIndex, setImageIndex] = useState(0)
+
+  const indexChange = useRef((info: ChangeImageProps) => {
     setImageIndex(info.viewableItems[0].index!)
   })
+
   return (
-      <Container>
-        <ImageIndexes>
-          {
-            imagesUrl.map( (item, index)=>(
-              <Bullet 
-                key={ String(item.id) }
-                active={index === imageIndex}
-              />  
-            ))
-          }
-            
-            
-        </ImageIndexes>
-        
-          <FlatList
-            data = {imagesUrl}
-            keyExtractor = {item => item.id}
-            renderItem ={ ({ item }) =>(
-              <CarImageWrapper>
-                <CarImage
-                  source ={{uri: item.photo}}
-                  resizeMode = 'contain'
-                />
-              </CarImageWrapper>
-            )}
-            horizontal
-            showsHorizontalScrollIndicator = {false}
-            onViewableItemsChanged ={indexChanged.current}
-          
-          />
-            
-        
-    </Container> 
-  );
+    <Container>
+      <ImageIndexes>
+        {imagesUrls.map((item, index) => (
+          <Bullet active={imageIndex === index} key={String(index)} />
+        ))}
+      </ImageIndexes>
+
+      <FlatList
+        data={imagesUrls}
+        keyExtractor={item => item.id}
+        renderItem={({ item }) => (
+          <CarImageWrapper>
+            <CarImage source={{ uri: item.photo }} resizeMode="contain" />
+          </CarImageWrapper>
+        )}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        pagingEnabled
+        onViewableItemsChanged={indexChange.current}
+      />
+    </Container>
+  )
 }
